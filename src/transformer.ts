@@ -58,13 +58,13 @@ export const AutoCardLink: QuartzTransformerPlugin = () => {
                                                 <a href="${url}" class="cardlink-box" target="_blank" rel="noopener noreferrer">
                                                     <div class="cardlink-contents">
                                                         <div class="cardlink-image-wrapper">
-                                                            <img class="cardlink-image" src="${image}" alt="${host}"></img>
+                                                            <img class="cardlink-image" data-lightbox-ignore src="${image}" alt="${host}"></img>
                                                         </div>
                                                         <div class="cardlink-content">
                                                             <div class="cardlink-title">${title}</div>
                                                             <div class="cardlink-description">${description}</div>
                                                             <div class="cardlink-info">
-                                                                <img class="cardlink-favicon" src="${favicon}" alt="${host}"></img>
+                                                                <img class="cardlink-favicon" data-lightbox-ignore src="${favicon}" alt="${host}"></img>
                                                                 <span class="cardlink-host">${host}</span>
                                                             </div>
                                                         </div>
@@ -82,7 +82,7 @@ export const AutoCardLink: QuartzTransformerPlugin = () => {
                                                             <div class="cardlink-title">${title}</div>
                                                             <div class="cardlink-description">${description}</div>
                                                             <div class="cardlink-info">
-                                                                <img class="cardlink-favicon" src="${favicon}" alt="${host}"></img>
+                                                                <img class="cardlink-favicon" data-lightbox-ignore src="${favicon}" alt="${host}"></img>
                                                                 <span class="cardlink-host">${host}</span>
                                                             </div>
                                                         </div>
@@ -97,7 +97,7 @@ export const AutoCardLink: QuartzTransformerPlugin = () => {
                                                 <a href="${url}" class="cardlink-box" target="_blank" rel="noopener noreferrer">
                                                     <div class="cardlink-contents">
                                                         <div class="cardlink-image-wrapper">
-                                                            <img class="cardlink-image" src="${image}" alt="${host}"></img>
+                                                            <img class="cardlink-image" data-lightbox-ignore src="${image}" alt="${host}"></img>
                                                         </div>
                                                         <div class="cardlink-content">
                                                             <div class="cardlink-title">${title}</div>
