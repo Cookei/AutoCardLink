@@ -12,8 +12,8 @@
 
   &:hover {
     background-color: var(--light);
-    transform: scale(1.02);
-    box-shadow: 3px 3px 5px var(--dark);
+    transform: scale(1.01);
+    box-shadow: 0 8px 32px #0003;
   }
 
   svg {
