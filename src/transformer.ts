@@ -1,103 +1,162 @@
-import type { PluggableList, Plugin } from "unified";
-import type { Root as MdastRoot } from "mdast";
-import type { Root as HastRoot, Element } from "hast";
-import type { VFile } from "vfile";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import { findAndReplace } from "mdast-util-find-and-replace";
+import type { PluggableList } from "unified";
+import type { Html } from "mdast";
 import { visit } from "unist-util-visit";
-import type { QuartzTransformerPlugin, BuildCtx } from "@quartz-community/types";
-import type { ExampleTransformerOptions } from "./types";
+import type { QuartzTransformerPlugin, CSSResource } from "@quartz-community/types";
+import cardlinkStyle from "./autoCardLink.inline.scss";
 
-const defaultOptions: ExampleTransformerOptions = {
-  highlightToken: "==",
-  headingClass: "example-plugin-heading",
-  enableGfm: true,
-  addHeadingSlugs: true,
-};
+const urlPrefix = "url: ";
+const titlePrefix = 'title: "';
+const descriptionPrefix = 'description: "';
+const hostPrefix = "host: ";
+const faviconPrefix = "favicon: ";
+const imagePrefix = "image: ";
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const remarkHighlightToken = (token: string): Plugin<[], MdastRoot> => {
-  const escapedToken = escapeRegExp(token);
-  const pattern = new RegExp(`${escapedToken}([^\n]+?)${escapedToken}`, "g");
-  return () => (tree: MdastRoot, _file: VFile) => {
-    findAndReplace(tree, [
-      [
-        pattern,
-        (_match: string, value: string) => ({
-          type: "strong",
-          children: [{ type: "text", value }],
-        }),
-      ],
-    ]);
-  };
-};
-
-const rehypeHeadingClass = (className: string): Plugin<[], HastRoot> => {
-  return () => (tree: HastRoot, _file: VFile) => {
-    visit(tree, "element", (node: Element) => {
-      if (!/^h[1-6]$/.test(node.tagName)) {
-        return;
-      }
-
-      const existing = node.properties?.className;
-      const classes: string[] = Array.isArray(existing)
-        ? existing.filter((value): value is string => typeof value === "string")
-        : typeof existing === "string"
-          ? [existing]
-          : [];
-      node.properties = {
-        ...node.properties,
-        className: [...classes, className],
-      };
-    });
-  };
-};
-
-/**
- * Example transformer showing remark/rehype usage and resource injection.
- */
-export const ExampleTransformer: QuartzTransformerPlugin<Partial<ExampleTransformerOptions>> = (
-  userOptions?: Partial<ExampleTransformerOptions>,
-) => {
-  const options = { ...defaultOptions, ...userOptions };
+export const AutoCardLink: QuartzTransformerPlugin = () => {
   return {
-    name: "ExampleTransformer",
-    textTransform(_ctx: BuildCtx, src: string) {
-      return src.endsWith("\n") ? src : `${src}\n`;
-    },
+    name: "AutoCardLink",
     markdownPlugins(): PluggableList {
-      const plugins: PluggableList = [remarkHighlightToken(options.highlightToken)];
-      if (options.enableGfm) {
-        plugins.unshift(remarkGfm);
-      }
-      return plugins;
-    },
-    htmlPlugins(): PluggableList {
-      const plugins: PluggableList = [rehypeHeadingClass(options.headingClass)];
-      if (options.addHeadingSlugs) {
-        plugins.unshift(rehypeSlug);
-      }
-      return plugins;
+      return [
+        () => {
+          return (tree, _file) => {
+            visit(tree, "code", (node, index, parent) => {
+              if (node.lang === "cardlink") {
+                const content: string[] = node.value.split("\n");
+
+                const url = content.find((line) => line.startsWith(urlPrefix))
+                  ? removePrefix(content.find((line) => line.startsWith(urlPrefix))!, urlPrefix)
+                  : "";
+                const title = content.find((line) => line.startsWith(titlePrefix))
+                  ? removePrefix(
+                      content.find((line) => line.startsWith(titlePrefix))!,
+                      titlePrefix,
+                    ).replace(/"/g, "")
+                  : "";
+                const description = content.find((line) => line.includes(descriptionPrefix))
+                  ? removePrefix(
+                      content.find((line) => line.includes(descriptionPrefix))!,
+                      descriptionPrefix,
+                    ).replace(/"/g, "")
+                  : "";
+                const host = content.find((line) => line.startsWith(hostPrefix))
+                  ? removePrefix(content.find((line) => line.startsWith(hostPrefix))!, hostPrefix)
+                  : "";
+                const favicon = content.find((line) => line.startsWith(faviconPrefix))
+                  ? removePrefix(
+                      content.find((line) => line.startsWith(faviconPrefix))!,
+                      faviconPrefix,
+                    )
+                  : "";
+                const image = content.find((line) => line.startsWith(imagePrefix))
+                  ? removePrefix(content.find((line) => line.startsWith(imagePrefix))!, imagePrefix)
+                  : "";
+
+                const newHtmlNode: Html = (() => {
+                  if (favicon && image) {
+                    return {
+                      type: "html",
+                      value: `
+                                                <a href="${url}" class="cardlink-box" target="_blank" rel="noopener noreferrer">
+                                                    <div class="cardlink-contents">
+                                                        <div class="cardlink-image-wrapper">
+                                                            <img class="cardlink-image" src="${image}" alt="${host}"></img>
+                                                        </div>
+                                                        <div class="cardlink-content">
+                                                            <div class="cardlink-title">${title}</div>
+                                                            <div class="cardlink-description">${description}</div>
+                                                            <div class="cardlink-info">
+                                                                <img class="cardlink-favicon" src="${favicon}" alt="${host}"></img>
+                                                                <span class="cardlink-host">${host}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            `,
+                    };
+                  } else if (favicon) {
+                    return {
+                      type: "html",
+                      value: `
+                                                <a href="${url}" class="cardlink-box" target="_blank" rel="noopener noreferrer">
+                                                    <div class="cardlink-contents">
+                                                        <div class="cardlink-content">
+                                                            <div class="cardlink-title">${title}</div>
+                                                            <div class="cardlink-description">${description}</div>
+                                                            <div class="cardlink-info">
+                                                                <img class="cardlink-favicon" src="${favicon}" alt="${host}"></img>
+                                                                <span class="cardlink-host">${host}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            `,
+                    };
+                  } else if (image) {
+                    return {
+                      type: "html",
+                      value: `
+                                                <a href="${url}" class="cardlink-box" target="_blank" rel="noopener noreferrer">
+                                                    <div class="cardlink-contents">
+                                                        <div class="cardlink-image-wrapper">
+                                                            <img class="cardlink-image" src="${image}" alt="${host}"></img>
+                                                        </div>
+                                                        <div class="cardlink-content">
+                                                            <div class="cardlink-title">${title}</div>
+                                                            <div class="cardlink-description">${description}</div>
+                                                            <div class="cardlink-info">
+                                                                <span class="cardlink-host">${host}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            `,
+                    };
+                  } else {
+                    return {
+                      type: "html",
+                      value: `
+                                                <a href="${url}" class="cardlink-box" target="_blank" rel="noopener noreferrer">
+                                                    <div class="cardlink-contents">
+                                                        <div class="cardlink-content">
+                                                            <div class="cardlink-title">${title}</div>
+                                                            <div class="cardlink-description">${description}</div>
+                                                            <div class="cardlink-info">
+                                                                <span class="cardlink-host">${host}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            `,
+                    };
+                  }
+                })();
+
+                if (parent && index !== undefined) {
+                  parent.children.splice(index, 1, newHtmlNode);
+                }
+              }
+            });
+          };
+        },
+      ];
     },
     externalResources() {
-      return {
-        css: [
-          {
-            content: `.${options.headingClass} { letter-spacing: 0.02em; }`,
-            inline: true,
-          },
-        ],
-        js: [
-          {
-            contentType: "inline",
-            loadTime: "afterDOMReady",
-            script: "document.documentElement.dataset.exampleTransformer = 'true'",
-          },
-        ],
-        additionalHead: [],
-      };
+      const js: any[] = [];
+      const css: CSSResource[] = [];
+
+      css.push({
+        content: cardlinkStyle,
+        inline: true,
+      });
+      return { js, css };
     },
   };
 };
+
+function removePrefix(text: string | undefined, prefix: string): string {
+  if (!text) return "";
+  if (text.startsWith(prefix)) {
+    return text.substring(prefix.length);
+  }
+
+  return text;
+}
