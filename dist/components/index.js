@@ -33,6 +33,47 @@ function u2(e2, t2, n2, o2, i2, u3) {
   return l.vnode && l.vnode(l2), l2;
 }
 
+// node_modules/@quartz-community/utils/dist/index.js
+function slugifyFilePath(fp, excludeExt) {
+  fp = stripSlashes(fp);
+  const ext = getFileExtension(fp);
+  const withoutFileExt = fp.replace(new RegExp(ext + "$"), "");
+  const finalExt = [".md", ".html", void 0].includes(ext) ? "" : ext;
+  let slug2 = _sluggify(withoutFileExt);
+  if (endsWith(slug2, "_index")) {
+    slug2 = slug2.replace(/_index$/, "index");
+  }
+  const segments = slug2.split("/");
+  if (segments.length >= 2 && segments[segments.length - 1] === segments[segments.length - 2]) {
+    segments[segments.length - 1] = "index";
+    slug2 = segments.join("/");
+  }
+  return slug2 + (finalExt ?? "");
+}
+function endsWith(s2, suffix) {
+  return s2 === suffix || s2.endsWith("/" + suffix);
+}
+function stripSlashes(s2, onlyStripPrefix) {
+  if (s2.startsWith("/")) {
+    s2 = s2.substring(1);
+  }
+  if (s2.endsWith("/")) {
+    s2 = s2.slice(0, -1);
+  }
+  return s2;
+}
+function getFileExtension(s2) {
+  return s2.match(/\.[A-Za-z0-9]+$/)?.[0];
+}
+function slugifyPath(s2) {
+  return s2.split("/").map(
+    (segment) => segment.replace(/\s/g, "-").replace(/&/g, "-and-").replace(/%/g, "-percent").replace(/\?/g, "").replace(/#/g, "").replace(/[<>:"|*]/g, "").toLowerCase()
+  ).join("/").replace(/\/$/, "");
+}
+function _sluggify(s2) {
+  return slugifyPath(s2);
+}
+
 // src/components/ExampleComponent.tsx
 var ExampleComponent_default = ((opts) => {
   const {
@@ -46,12 +87,21 @@ var ExampleComponent_default = ((opts) => {
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
     const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
-    console.log(props.fileData.frontmatter);
+    const image = props.fileData?.frontmatter?.image;
+    let thumbnail;
+    if (typeof image === "string") {
+      const match = image.match(/\[\[(.*?)\]\]/);
+      const captured = match?.[1];
+      if (captured) {
+        thumbnail = slugifyFilePath(captured);
+      }
+    }
     return isLab ? /* @__PURE__ */ u2(
       "img",
       {
         "data-lightbox-ignore": true,
         class: classNames(classNameImage),
+        src: thumbnail,
         alt: title + " thumbnail"
       }
     ) : /* @__PURE__ */ u2("div", { class: classNames(className), children: fullText });
