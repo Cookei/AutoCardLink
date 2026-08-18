@@ -7,6 +7,7 @@ import { classNames } from "../util/lang";
 import style from "./styles/example.scss";
 // @ts-expect-error - inline script import handled by Quartz bundler
 import script from "./scripts/example.inline.ts";
+import { transformInternalLink } from "@quartz-community/utils";
 
 export interface ExampleComponentOptions {
   prefix?: string;
@@ -24,11 +25,16 @@ export default ((opts?: ExampleComponentOptions) => {
   } = opts ?? {};
 
   const Component: QuartzComponent = (props: QuartzComponentProps) => {
-    const frontmatter = props.fileData?.frontmatter as { title?: string } | undefined;
+    const frontmatter = props.fileData?.frontmatter as
+      | { title?: string; image?: string; socialImage?: string; tags?: string[] }
+      | undefined;
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
     const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
-    const thumbnail = props.fileData?.frontmatter?.socialImage;
+    const image = typeof frontmatter?.image === "string" ? frontmatter.image : undefined;
+    const socialImage =
+      typeof frontmatter?.socialImage === "string" ? frontmatter.socialImage : undefined;
+    const thumbnail = image ? transformInternalLink(image) : socialImage;
 
     return isLab ? (
       <img
