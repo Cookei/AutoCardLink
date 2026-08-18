@@ -28,7 +28,7 @@ export default ((opts?: ExampleComponentOptions) => {
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
     const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
-    console.log(props.fileData);
+    console.log(props.fileData.frontmatter);
     return isLab ? (
       <img
         data-lightbox-ignore={true}

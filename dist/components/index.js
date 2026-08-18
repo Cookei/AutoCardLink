@@ -46,7 +46,7 @@ var ExampleComponent_default = ((opts) => {
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
     const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
-    console.log(props.fileData);
+    console.log(props.fileData.frontmatter);
     return isLab ? /* @__PURE__ */ u2(
       "img",
       {
