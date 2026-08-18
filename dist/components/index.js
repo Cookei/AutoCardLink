@@ -46,7 +46,7 @@ var ExampleComponent_default = ((opts) => {
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
     const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
-    const thumbnail = typeof props.fileData?.frontmatter?.image === "string" ? props.fileData.frontmatter.image : "/assets/placeholder-image.png";
+    const thumbnail = props.fileData?.frontmatter?.socialImage;
     return isLab ? /* @__PURE__ */ u2(
       "img",
       {
