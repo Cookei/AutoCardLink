@@ -8,7 +8,7 @@ import { classNames } from "../util/lang";
 import style from "./styles/example.scss";
 // @ts-expect-error - inline script import handled by Quartz bundler
 import script from "./scripts/example.inline.ts";
-import { slugifyFilePath } from "@quartz-community/utils";
+import { slugifyFilePath, splitAnchor, transformLink } from "@quartz-community/utils";
 
 export interface ExampleComponentOptions {
   prefix?: string;
@@ -35,12 +35,20 @@ export default ((opts?: ExampleComponentOptions) => {
 
     if (typeof image === "string") {
       const match = image.match(/\[\[(.*?)\]\]/);
-
       const captured = match?.[1];
-      if (captured) {
-        thumbnail = slugifyFilePath(captured as FilePath);
+
+      if (captured && props.fileData.slug) {
+        const [targetRaw] = splitAnchor(captured);
+
+        if (targetRaw) {
+          thumbnail = transformLink(props.fileData.slug, targetRaw, {
+            strategy: "shortest",
+            allSlugs: [],
+          });
+        }
       }
     }
+
     return isLab ? (
       <img
         data-lightbox-ignore={true}
