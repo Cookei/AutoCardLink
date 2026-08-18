@@ -2,13 +2,11 @@ import type {
   QuartzComponent,
   QuartzComponentProps,
   QuartzComponentConstructor,
-  FilePath,
 } from "@quartz-community/types";
 import { classNames } from "../util/lang";
 import style from "./styles/example.scss";
 // @ts-expect-error - inline script import handled by Quartz bundler
 import script from "./scripts/example.inline.ts";
-import { slugifyFilePath, splitAnchor, transformLink } from "@quartz-community/utils";
 
 export interface ExampleComponentOptions {
   prefix?: string;
@@ -18,47 +16,14 @@ export interface ExampleComponentOptions {
 }
 
 export default ((opts?: ExampleComponentOptions) => {
-  const {
-    prefix = "",
-    suffix = "",
-    className = "example-component",
-    classNameImage = "example-component-image",
-  } = opts ?? {};
+  const { prefix = "", suffix = "", className = "example-component" } = opts ?? {};
 
   const Component: QuartzComponent = (props: QuartzComponentProps) => {
     const frontmatter = props.fileData?.frontmatter as { title?: string } | undefined;
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
-    const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
-    const image = props.fileData?.frontmatter?.image;
-    let thumbnail: string | undefined;
 
-    if (typeof image === "string") {
-      const match = image.match(/\[\[(.*?)\]\]/);
-      const captured = match?.[1];
-
-      if (captured && props.fileData.slug) {
-        const [targetRaw] = splitAnchor(captured);
-
-        if (targetRaw) {
-          thumbnail = transformLink(props.fileData.slug, targetRaw, {
-            strategy: "shortest",
-            allSlugs: [],
-          });
-        }
-      }
-    }
-
-    return isLab ? (
-      <img
-        data-lightbox-ignore={true}
-        class={classNames(classNameImage)}
-        src={thumbnail}
-        alt={title + " thumbnail"}
-      />
-    ) : (
-      <div class={classNames(className)}>{fullText}</div>
-    );
+    return <div class={classNames(className)}>{fullText}</div>;
   };
 
   Component.css = style;
