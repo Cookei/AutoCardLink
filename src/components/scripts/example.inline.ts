@@ -52,37 +52,6 @@ function init() {
   const components = document.querySelectorAll(".example-component");
   if (components.length === 0) return;
 
-  // Example: Track cleanup functions for event listeners
-  const cleanupFns: Array<() => void> = [];
-
-  // Example: Add a keyboard shortcut (Ctrl/Cmd + Shift + E)
-  function keyboardHandler(e: KeyboardEvent) {
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "e") {
-      e.preventDefault();
-      console.log("[ExampleComponent] Keyboard shortcut triggered!");
-      // Do something interesting here
-    }
-  }
-
-  document.addEventListener("keydown", keyboardHandler);
-  cleanupFns.push(() => document.removeEventListener("keydown", keyboardHandler));
-
-  // Example: Click handler with proper cleanup
-  for (const component of components) {
-    const clickHandler = () => {
-      console.log("[ExampleComponent] Clicked!");
-    };
-    component.addEventListener("click", clickHandler);
-    cleanupFns.push(() => component.removeEventListener("click", clickHandler));
-  }
-
-  // Register cleanup with Quartz's cleanup system
-  if (typeof window !== "undefined" && window.addCleanup) {
-    window.addCleanup(() => {
-      cleanupFns.forEach((fn) => fn());
-    });
-  }
-
   console.log("[ExampleComponent] Initialized with", components.length, "component(s)");
 }
 

@@ -4,6 +4,7 @@ interface ExampleComponentOptions {
     prefix?: string;
     suffix?: string;
     className?: string;
+    classNameImage?: string;
 }
 declare const _default: (opts?: ExampleComponentOptions) => QuartzComponent;
 

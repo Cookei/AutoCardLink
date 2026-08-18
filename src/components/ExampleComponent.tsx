@@ -12,17 +12,37 @@ export interface ExampleComponentOptions {
   prefix?: string;
   suffix?: string;
   className?: string;
+  classNameImage?: string;
 }
 
 export default ((opts?: ExampleComponentOptions) => {
-  const { prefix = "", suffix = "", className = "example-component" } = opts ?? {};
+  const {
+    prefix = "",
+    suffix = "",
+    className = "example-component",
+    classNameImage = "example-component-image",
+  } = opts ?? {};
 
   const Component: QuartzComponent = (props: QuartzComponentProps) => {
     const frontmatter = props.fileData?.frontmatter as { title?: string } | undefined;
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
+    const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
+    const thumbnail =
+      typeof props.fileData?.frontmatter?.image === "string"
+        ? props.fileData.frontmatter.image
+        : "/assets/placeholder-image.png";
 
-    return <div class={classNames(className)}>{fullText}</div>;
+    return isLab ? (
+      <img
+        data-lightbox-ignore={true}
+        src={thumbnail}
+        class={classNames(classNameImage)}
+        alt={title + " thumbnail"}
+      />
+    ) : (
+      <div class={classNames(className)}>{fullText}</div>
+    );
   };
 
   Component.css = style;
