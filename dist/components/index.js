@@ -45,13 +45,12 @@ var ExampleComponent_default = ((opts) => {
     const frontmatter = props.fileData?.frontmatter;
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
-    const isLab = frontmatter?.tags?.includes("lab") ?? false;
-    const thumbnail = frontmatter?.image ?? frontmatter?.socialImage;
+    const isLab = props.fileData?.frontmatter?.tags?.includes("lab");
+    console.log(props.fileData);
     return isLab ? /* @__PURE__ */ u2(
       "img",
       {
         "data-lightbox-ignore": true,
-        src: thumbnail,
         class: classNames(classNameImage),
         alt: title + " thumbnail"
       }
