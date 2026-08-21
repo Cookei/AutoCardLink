@@ -8,7 +8,7 @@ function classNames(...classes) {
 }
 
 // src/components/styles/example.scss
-var example_default = ".example-component {\n  padding: 8px 16px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border-radius: 4px;\n  font-weight: 600;\n  display: inline-block;\n}\n\n.example-component-image {\n  object-fit: cover;\n}";
+var example_default = ".example-component {\n  padding: 8px 16px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border-radius: 4px;\n  font-weight: 600;\n}\n\n.example-component-image {\n  object-fit: cover;\n}";
 
 // src/components/scripts/example.inline.ts
 var example_inline_default = 'function o(){let e=window.location.pathname;return e.startsWith("/")&&(e=e.slice(1)),e.endsWith("/")&&(e=e.slice(0,-1)),e||"index"}function n(){let e=document.querySelectorAll(".example-component");e.length!==0&&console.log("[ExampleComponent] Initialized with",e.length,"component(s)")}document.addEventListener("nav",e=>{let t=e.detail?.url||o();console.log("[ExampleComponent] Navigation to:",t),n()});document.addEventListener("render",()=>{console.log("[ExampleComponent] Render event - re-initializing"),n()});document.addEventListener("prenav",()=>{let e=document.querySelector(".example-component");e&&sessionStorage.setItem("exampleScrollTop",e.scrollTop?.toString()||"0")});\n';
@@ -29,17 +29,40 @@ function u2(e2, t2, n2, o2, i2, u3) {
   var a2, c2, p2 = t2;
   if ("ref" in p2) for (c2 in p2 = {}, t2) "ref" == c2 ? a2 = t2[c2] : p2[c2] = t2[c2];
   var l2 = { type: e2, props: p2, key: n2, ref: a2, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f2, __i: -1, __u: 0, __source: i2, __self: u3 };
+  if ("function" == typeof e2 && (a2 = e2.defaultProps)) for (c2 in a2) void 0 === p2[c2] && (p2[c2] = a2[c2]);
   return l.vnode && l.vnode(l2), l2;
 }
 
 // src/components/ExampleComponent.tsx
 var ExampleComponent_default = ((opts) => {
-  const { prefix = "", suffix = "", className = "example-component" } = opts ?? {};
+  const {
+    prefix = "",
+    suffix = "",
+    className = "example-component",
+    classNameImage = "example-component-image"
+  } = opts ?? {};
   const Component = (props) => {
-    const frontmatter = props.fileData?.frontmatter;
+    const fileData = props.fileData;
+    const frontmatter = fileData.frontmatter;
     const title = frontmatter?.title ?? "Untitled";
     const fullText = `${prefix}${title}${suffix}`;
-    return /* @__PURE__ */ u2("div", { class: classNames(className), children: fullText });
+    const isLab = frontmatter?.tags?.includes("lab");
+    const image = frontmatter?.image ?? "";
+    const match = image.match(/^!?\[\[([^\]|#]+)(?:\|[^\]]+)?\]\]$/);
+    const target = match?.[1]?.trim();
+    const thumbnail = target ? fileData.noteProperties?.resolvedLinks?.[target.toLowerCase()] ?? "" : "";
+    return isLab ? /* @__PURE__ */ u2("div", { children: [
+      /* @__PURE__ */ u2("div", { class: classNames(className), children: fullText }),
+      /* @__PURE__ */ u2(
+        "img",
+        {
+          "data-lightbox-ignore": true,
+          class: classNames(classNameImage),
+          src: thumbnail,
+          alt: title + " thumbnail"
+        }
+      )
+    ] }) : props.fileData.toc ? /* @__PURE__ */ u2("div", { class: classNames(className), children: fullText }) : "";
   };
   Component.css = example_default;
   Component.afterDOMLoaded = example_inline_default;
